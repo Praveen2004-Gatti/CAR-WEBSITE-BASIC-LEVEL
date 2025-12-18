@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Car Information</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar">
+      <div class="logo">🚗 AutoLux</div>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="Inventory.html">Inventory</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Discover Your Dream Car</h1>
+      <p>Luxury, performance, and style—all in one place.</p>
+      <a href="#" class="cta-button">Browse Inventory</a>
+    </div>
+  </section>
+
+  <!-- Car Gallery Section -->
+  <section class="car-gallery">
+    <h2>Featured Cars</h2>
+    <div class="gallery-grid">
+      <div class="car-card">
+        <img src="images/2022BMWM4.jpeg" alt="BMW M4" />
+        <p>2022 BMW M4</p>
+        <div class="car-info">
+          <p>The M4 Competition is powered by a 3.0L twin-turbo inline-six producing up to 503 horsepower, launching from 0–100 km/h in just 3.5 seconds.
+With M xDrive all-wheel drive, adaptive suspension, and a top speed of 290 km/h, it delivers thrilling performance and razor-sharp handling.
+
+
+<p><a href="https://youtu.be/eLL_7Vb1MIE?si=jzh7MBpX9jZNkbaZ" target="_blank" class="youtube-button">
+  ▶ Watch BMW M4 Review
+</a><p></p>
+
+        </div>
+      </div>
+      <div class="car-card">
+        <img src="images/2023AudiRS7.jpeg" alt="Audi RS7" />
+        <p>2023 Audi RS7</p>
+        <div class="car-info">
+          <h3>The RS7 is powered by a 591-hp twin-turbo 4.0L V8, accelerating from 0 to 60 mph in just 3.5 seconds with a top speed of 190 mph.
+It combines blistering performance with luxury.<p><a href="https://youtu.be/dBXblNBwajQ?si=wc_UawjHXNOKKqQr" target="_blank" style="padding: 10px 20px; background-color: white; color:black; text-decoration: none; border-radius: 5px; font-weight: bold;">▶ Watch Audi RS7 Review</a><p></p>
+
+</h3>
+          <p></p>
+        </div>
+      </div>
+      <div class="car-card">
+        <img src="images/2022MercedesAMGGT.jpeg" alt="Mercedes AMG GT" />
+        <p>2022 Mercedes AMG GT</p>
+        <div class="car-info">
+          <p>The AMG GT is powered by a 4.0L twin-turbo V8 producing up to 577 horsepower, launching from 0–100 km/h in just 3.6 seconds.
+It combines aggressive styling, a luxurious cockpit, and track-ready handling.<p><a href="https://youtu.be/PbSj2JB4Avw?si=0jDIzN-AXFUltguh" target="_blank" class="youtube-button">
+  ▶ Mercedes AMG GT
+</a><p> </p>
+
+</p>
+        </div>
+      </div>
+      <div class="car-card">
+        <img src="images/2023Porsche911.jpeg" alt="Porsche 911" />
+        <p>2023 Porsche 911</p>
+        <div class="car-info">
+          <p>The 2023 911 offers a range of flat-six engines from 379 to 640 horsepower, with top trims like the Turbo S sprinting from 0–60 mph in just 2.3 seconds.
+It blends timeless design, cutting-edge tech, and razor-sharp handling, making it one of the most versatile and thrilling sports cars on the market.
+
+<p><a href="https://youtu.be/l66ZdUBCvUc?si=wLHFCOKKbrNHfeVW" target="_blank" class="youtube-button">
+  ▶ Porsche 911
+</a><p></p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const resultsDiv = document.getElementById("results");
+
+    let dataset = [];
+
+    // Step 1: Load archive.zip and extract CSV
+    fetch('files/archive.zip')
+      .then(response => response.arrayBuffer())
+      .then(buffer => JSZip.loadAsync(buffer))
+      .then(zip => {
+        const csvFileName = Object.keys(zip.files).find(name => name.endsWith('.csv'));
+        if (!csvFileName) throw new Error("No CSV file found in archive.zip");
+
+        return zip.files[csvFileName].async("string");
+      })
+      .then(csvText => {
+        const rows = csvText.trim().split("\n").map(r => r.split(","));
+        const headers = rows[0];
+        dataset = rows.slice(1).map(row => {
+          let obj = {};
+          row.forEach((cell, i) => obj[headers[i]] = cell.trim());
+          return obj;
+        });
+
+        // Enable search after loading
+        searchInput.disabled = false;
+        searchInput.placeholder = "Search by any keyword...";
+      })
+      .catch(error => {
+        resultsDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+      });
+
+    // Step 2: Search functionality
+    searchInput.addEventListener("input", () => {
+      const query = searchInput.value.toLowerCase();
+      resultsDiv.innerHTML = "";
+
+      const filtered = dataset.filter(entry =>
+        Object.values(entry).some(value => value.toLowerCase().includes(query))
+      );
+
+      if (filtered.length === 0 && query) {
+        resultsDiv.innerHTML = `<p>No results found for "${query}"</p>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "result-row";
+        div.innerHTML = Object.entries(item).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join(" | ");
+        resultsDiv.appendChild(div);
+      });
+    });
+  </script>
+  
+</body>
+</html>
